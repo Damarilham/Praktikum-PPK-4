@@ -4,10 +4,10 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-// FIX(sementara, di-apply di feature/dashboard): useSearchParams() wajib
-// dibungkus <Suspense> di App Router, kalau tidak `next build` gagal
-// (missing-suspense-with-csr-bailout). P1 perlu terapkan fix yang sama
-// di branch feat/auth supaya tidak hilang saat nanti di-merge ke main.
+// useSearchParams() WAJIB dibungkus <Suspense> di Next.js App Router.
+// Tanpa ini, React gagal hydrate halaman ini -> form jatuh balik ke
+// perilaku HTML polos (submit GET ke URL sendiri) -> makanya tadi
+// nyangkut di "/auth/login?" dan fetch login-nya gak pernah kepanggil.
 export default function LoginPage() {
   return (
     <Suspense fallback={null}>
@@ -19,7 +19,7 @@ export default function LoginPage() {
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") ?? "/dashboard";
+  const redirectTo = searchParams.get("redirect") || "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -74,7 +74,9 @@ function LoginForm() {
           </label>
           <input
             id="email"
+            name="email"
             type="email"
+            autoComplete="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -88,7 +90,9 @@ function LoginForm() {
           </label>
           <input
             id="password"
+            name="password"
             type="password"
+            autoComplete="current-password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
