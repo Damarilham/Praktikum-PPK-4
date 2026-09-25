@@ -1,13 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+// useSearchParams() WAJIB dibungkus <Suspense> di Next.js App Router.
+// Tanpa ini, React gagal hydrate halaman ini -> form jatuh balik ke
+// perilaku HTML polos (submit GET ke URL sendiri) -> makanya tadi
+// nyangkut di "/auth/login?" dan fetch login-nya gak pernah kepanggil.
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") ?? "/dashboard";
+  const redirectTo = searchParams.get("redirect") || "/dashboard";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -62,7 +74,9 @@ export default function LoginPage() {
           </label>
           <input
             id="email"
+            name="email"
             type="email"
+            autoComplete="email"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -76,7 +90,9 @@ export default function LoginPage() {
           </label>
           <input
             id="password"
+            name="password"
             type="password"
+            autoComplete="current-password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
