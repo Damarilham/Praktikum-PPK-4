@@ -1,53 +1,63 @@
-import { PrismaPg } from "@prisma/adapter-pg";
-import { PrismaClient, JenisTransaksi } from "../app/generated/prisma/client";
-import bcrypt from "bcryptjs";
 import { faker } from "@faker-js/faker";
-import dotenv from "dotenv";
-
-dotenv.config();
+import bcrypt from "bcryptjs";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { JenisTransaksi, PrismaClient } from "../app/generated/prisma/client";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
-
 async function main() {
-  console.log("Seeding database...");
+  const passwordHash = await bcrypt.hash("password123", 10);
 
-  // Bersihkan data lama jika perlu
-  await prisma.transaksi.deleteMany();
-  await prisma.user.deleteMany();
-
-  // Buat User contoh
-  const hashedPassword = await bcrypt.hash("password123", 10);
-  const user = await prisma.user.create({
-    data: {
-      nama: "Mahasiswa Contoh",
-      email: "mahasiswa@example.com",
-      password: hashedPassword,
+  const user = await prisma.user.upsert({
+    where: { email: "demo@kantongmahasiswa.test" },
+    update: {},
+    create: {
+      nama: "Mahasiswa Demo",
+      email: "demo@kantongmahasiswa.test",
+      password: passwordHash,
     },
   });
 
-  // Buat beberapa Transaksi dummy
-  for (let i = 0; i < 10; i++) {
-    await prisma.transaksi.create({
-      data: {
+  const kategoriPemasukan = ["Uang Saku", "Beasiswa", "Freelance"];
+  const kategoriPengeluaran = ["Makan", "Transportasi", "Kos", "Hiburan", "Kuliah"];
+
+  const jumlahTransaksiLama = await prisma.transaksi.count({
+    where: { userId: user.id },
+  });
+
+  if (jumlahTransaksiLama === 0) {
+    const transaksiDummy = Array.from({ length: 20 }).map(() => {
+      const jenis = faker.helpers.arrayElement([
+        JenisTransaksi.PEMASUKAN,
+        JenisTransaksi.PENGELUARAN,
+      ]);
+      const kategori =
+        jenis === JenisTransaksi.PEMASUKAN
+          ? faker.helpers.arrayElement(kategoriPemasukan)
+          : faker.helpers.arrayElement(kategoriPengeluaran);
+
+      return {
         userId: user.id,
-        jenis: i % 2 === 0 ? JenisTransaksi.PEMASUKAN : JenisTransaksi.PENGELUARAN,
-        nominal: faker.number.int({ min: 10000, max: 200000 }),
-        kategori: i % 2 === 0 ? "Kiriman Orang Tua" : "Makan & Minum",
-        deskripsi: faker.commerce.productName(),
-        tanggal: faker.date.recent(),
-      },
+        jenis,
+        nominal: faker.number.int({ min: 10_000, max: 750_000 }),
+        kategori,
+        deskripsi: faker.lorem.words({ min: 2, max: 5 }),
+        tanggal: faker.date.recent({ days: 30 }),
+      };
     });
+
+    await prisma.transaksi.createMany({ data: transaksiDummy });
   }
 
-  console.log("Seeding selesai!");
+  console.log(`Seed selesai. Login demo: ${user.email} / password123`);
+  console.log(`User id: ${user.id} (pakai untuk cookie "userId" saat testing dashboard).`);
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
   })
   .finally(async () => {
     await prisma.$disconnect();
