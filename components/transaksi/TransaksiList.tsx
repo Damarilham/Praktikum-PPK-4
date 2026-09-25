@@ -11,10 +11,12 @@ type Props = {
 
 export default function TransaksiList({ initialTransaksi }: Props) {
   const router = useRouter();
-  const [transaksi, setTransaksi] = useState<Transaksi[]>(initialTransaksi);
   const [showForm, setShowForm] = useState(false);
   const [editingTransaksi, setEditingTransaksi] = useState<Transaksi | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deletedIds, setDeletedIds] = useState<Set<number>>(new Set());
+
+  const transaksi = initialTransaksi.filter((t) => !deletedIds.has(t.id));
 
   function refresh() {
     router.refresh();
@@ -39,22 +41,57 @@ export default function TransaksiList({ initialTransaksi }: Props) {
     if (!confirm("Yakin ingin menghapus transaksi ini?")) return;
 
     setDeletingId(id);
+    setDeletedIds((prev) => new Set(prev).add(id));
     try {
       const res = await fetch(`/api/transaksi/${id}`, { method: "DELETE" });
-      if (!res.ok) {
-        const data = await res.json();
-        alert(data.error ?? "Gagal menghapus transaksi");
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        alert("Response server tidak valid");
+        setDeletedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
         return;
       }
-      setTransaksi((prev) => prev.filter((t) => t.id !== id));
-    } catch {
-      alert("Terjadi kesalahan jaringan");
+
+      if (!res.ok) {
+        if (res.status === 401) {
+          alert("Sesi berakhir. Silakan login ulang.");
+        } else {
+          alert(data.error ?? `Error ${res.status}: ${res.statusText}`);
+        }
+        setDeletedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+        return;
+      }
+      // Success: router.refresh() will re-fetch server data
+      refresh();
+    } catch (err) {
+      setDeletedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+      if (err instanceof TypeError && err.message.includes("fetch")) {
+        alert("Terjadi kesalahan jaringan. Periksa koneksi Anda.");
+      } else {
+        console.error("Unexpected error:", err);
+        alert("Terjadi kesalahan tak terduga");
+      }
     } finally {
       setDeletingId(null);
     }
   }
 
   function handleFormSuccess() {
+    setDeletedIds(new Set());
     refresh();
   }
 

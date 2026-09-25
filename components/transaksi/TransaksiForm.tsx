@@ -85,9 +85,19 @@ export default function TransaksiForm({
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        setErrors({ form: "Response server tidak valid" });
+        return;
+      }
 
       if (!res.ok) {
+        if (res.status === 401) {
+          setErrors({ form: "Sesi berakhir. Silakan login ulang." });
+          return;
+        }
         if (data.details?.fieldErrors) {
           const fieldErrors: Record<string, string> = {};
           for (const [key, val] of Object.entries(data.details.fieldErrors)) {
@@ -95,15 +105,20 @@ export default function TransaksiForm({
           }
           setErrors(fieldErrors);
         } else {
-          setErrors({ form: data.error ?? "Terjadi kesalahan" });
+          setErrors({ form: data.error ?? `Error ${res.status}: ${res.statusText}` });
         }
         return;
       }
 
       onSuccess();
       onClose();
-    } catch {
-      setErrors({ form: "Terjadi kesalahan jaringan" });
+    } catch (err) {
+      if (err instanceof TypeError && err.message.includes("fetch")) {
+        setErrors({ form: "Terjadi kesalahan jaringan. Periksa koneksi Anda." });
+      } else {
+        console.error("Unexpected error:", err);
+        setErrors({ form: "Terjadi kesalahan tak terduga" });
+      }
     } finally {
       setLoading(false);
     }
@@ -136,7 +151,7 @@ export default function TransaksiForm({
               name="jenis"
               value={formData.jenis}
               onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               {JENIS_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -162,7 +177,7 @@ export default function TransaksiForm({
               min="0"
               step="1"
               placeholder="Contoh: 50000"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
             {errors.nominal && (
               <p className="mt-1 text-sm text-red-600">{errors.nominal}</p>
@@ -179,7 +194,7 @@ export default function TransaksiForm({
               name="tanggal"
               value={formData.tanggal}
               onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
             {errors.tanggal && (
               <p className="mt-1 text-sm text-red-600">{errors.tanggal}</p>
@@ -198,7 +213,7 @@ export default function TransaksiForm({
               onChange={handleChange}
               placeholder="Contoh: Makanan, Transport, dll"
               maxLength={100}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
 
@@ -214,7 +229,7 @@ export default function TransaksiForm({
               placeholder="Catatan tambahan..."
               maxLength={500}
               rows={3}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
           </div>
 

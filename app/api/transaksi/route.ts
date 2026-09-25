@@ -88,7 +88,16 @@ export async function POST(request: NextRequest) {
   }
 
   // ─── Create transaksi ────────────────────────────────────────────────────
-  const transaksi = await createTransaksi(user.id, parsed.data as TransaksiInput);
+  let transaksi;
+  try {
+    transaksi = await createTransaksi(user.id, parsed.data as TransaksiInput);
+  } catch (err) {
+    console.error("[POST /api/transaksi] Prisma error:", err);
+    return NextResponse.json(
+      { error: "Gagal membuat transaksi. Silakan coba lagi." },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json({ data: transaksi }, { status: 201 });
 }

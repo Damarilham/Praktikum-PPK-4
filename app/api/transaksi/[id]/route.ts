@@ -111,7 +111,16 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     );
   }
 
-  const transaksi = await updateTransaksi(user.id, transaksiId, parsed.data);
+  let transaksi;
+  try {
+    transaksi = await updateTransaksi(user.id, transaksiId, parsed.data);
+  } catch (err) {
+    console.error("[PATCH /api/transaksi/[id]] Prisma error:", err);
+    return NextResponse.json(
+      { error: "Gagal mengupdate transaksi. Silakan coba lagi." },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json({ data: transaksi });
 }
@@ -151,7 +160,15 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
     );
   }
 
-  await deleteTransaksi(user.id, transaksiId);
+  try {
+    await deleteTransaksi(user.id, transaksiId);
+  } catch (err) {
+    console.error("[DELETE /api/transaksi/[id]] Prisma error:", err);
+    return NextResponse.json(
+      { error: "Gagal menghapus transaksi. Silakan coba lagi." },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json({ message: "Transaksi berhasil dihapus" });
 }
