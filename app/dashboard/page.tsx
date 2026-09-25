@@ -1,22 +1,142 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getDashboardSummary } from "@/lib/services/dashboard";
 import { getCurrentUser } from "@/lib/services/auth";
 import LogoutButton from "@/components/auth/LogoutButton";
+import { JenisTransaksi } from "@/app/generated/prisma/client";
 
-// PLACEHOLDER — ganti dengan dashboard sungguhan (FR-04, tugas P2).
-// Cuma dipakai P1 untuk memastikan alur register/login/session/logout jalan.
-export default async function DashboardPlaceholderPage() {
+export const metadata = {
+  title: "Dashboard — Kantong Mahasiswa",
+};
+
+const rupiah = new Intl.NumberFormat("id-ID", {
+  style: "currency",
+  currency: "IDR",
+  maximumFractionDigits: 0,
+});
+
+const tanggalPendek = new Intl.DateTimeFormat("id-ID", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
+
+export default async function DashboardPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/auth/login");
 
+  const summary = await getDashboardSummary(user.id);
+
+  if (!summary) {
+    return (
+      <div className="flex flex-1 items-center justify-center bg-zinc-50 px-6 dark:bg-black">
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          Data user tidak ditemukan.
+        </p>
+      </div>
+    );
+  }
+
+  const { nama, saldo, totalPemasukan, totalPengeluaran, transaksiTerbaru } =
+    summary;
+
   return (
-    <div className="mx-auto max-w-md space-y-4 p-8">
-      <h1 className="text-xl font-semibold">Halo, {user.nama} 👋</h1>
-      <p className="text-sm text-gray-500">{user.email}</p>
-      <p className="text-sm text-gray-500">
-        Ini halaman dashboard placeholder — auth sudah jalan kalau kamu bisa
-        lihat halaman ini setelah login.
+    <div className="flex flex-1 flex-col bg-zinc-50 px-6 py-10 dark:bg-black sm:px-10">
+      <div className="mx-auto w-full max-w-4xl">
+        <header className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Selamat datang kembali,
+            </p>
+            <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+              {nama}
+            </h1>
+          </div>
+          <LogoutButton />
+        </header>
+
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <RingkasanCard label="Saldo" nilai={saldo} tekanan />
+          <RingkasanCard label="Total Pemasukan" nilai={totalPemasukan} />
+          <RingkasanCard label="Total Pengeluaran" nilai={totalPengeluaran} />
+        </section>
+
+        <section className="mt-8 rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
+          <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
+              Transaksi Terbaru
+            </h2>
+            <Link
+              href="/transaksi"
+              className="text-sm font-medium text-zinc-600 hover:underline dark:text-zinc-400"
+            >
+              Lihat semua
+            </Link>
+          </div>
+
+          {transaksiTerbaru.length === 0 ? (
+            <p className="px-6 py-10 text-center text-sm text-zinc-500 dark:text-zinc-400">
+              Belum ada transaksi. Mulai catat pemasukan atau pengeluaranmu.
+            </p>
+          ) : (
+            <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+              {transaksiTerbaru.map((t) => (
+                <li
+                  key={t.id}
+                  className="flex items-center justify-between gap-4 px-6 py-4"
+                >
+                  <div>
+                    <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                      {t.kategori ?? (t.deskripsi || "Tanpa kategori")}
+                    </p>
+                    <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                      {tanggalPendek.format(t.tanggal)}
+                      {t.deskripsi && t.kategori ? ` · ${t.deskripsi}` : ""}
+                    </p>
+                  </div>
+                  <span
+                    className={`shrink-0 text-sm font-semibold ${
+                      t.jenis === JenisTransaksi.PEMASUKAN
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : "text-red-600 dark:text-red-400"
+                    }`}
+                  >
+                    {t.jenis === JenisTransaksi.PEMASUKAN ? "+" : "-"}
+                    {rupiah.format(t.nominal)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function RingkasanCard({
+  label,
+  nilai,
+  tekanan = false,
+}: {
+  label: string;
+  nilai: number;
+  tekanan?: boolean;
+}) {
+  return (
+    <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+      <p className="text-sm text-zinc-500 dark:text-zinc-400">{label}</p>
+      <p
+        className={`mt-2 text-2xl font-semibold ${
+          tekanan
+            ? nilai >= 0
+              ? "text-emerald-600 dark:text-emerald-400"
+              : "text-red-600 dark:text-red-400"
+            : "text-zinc-900 dark:text-zinc-50"
+        }`}
+      >
+        {rupiah.format(nilai)}
       </p>
-      <LogoutButton />
     </div>
   );
 }
