@@ -1,18 +1,16 @@
 import { NextResponse } from "next/server";
 import { getDashboardSummary } from "@/lib/services/dashboard";
-import { getCurrentUserIdPlaceholder } from "@/lib/session-placeholder";
+import { getCurrentUser } from "@/lib/services/auth";
 
 // GET /api/dashboard — ringkasan dashboard user yang sedang login (FR-04).
-// TODO(P1): ganti getCurrentUserIdPlaceholder() dengan getCurrentUser()/getSession()
-// asli begitu modul auth (FR-02) tersedia.
 export async function GET() {
-  const userId = await getCurrentUserIdPlaceholder();
+  const user = await getCurrentUser();
 
-  if (!userId) {
+  if (!user) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const summary = await getDashboardSummary(userId);
+  const summary = await getDashboardSummary(user.id);
 
   if (!summary) {
     return NextResponse.json({ message: "User tidak ditemukan" }, { status: 404 });

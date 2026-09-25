@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getDashboardSummary } from "@/lib/services/dashboard";
-import { getCurrentUserIdPlaceholder } from "@/lib/session-placeholder";
+import { getCurrentUser } from "@/lib/services/auth";
+import LogoutButton from "@/components/auth/LogoutButton";
 import { JenisTransaksi } from "@/app/generated/prisma/client";
 
 export const metadata = {
@@ -20,34 +22,16 @@ const tanggalPendek = new Intl.DateTimeFormat("id-ID", {
 });
 
 export default async function DashboardPage() {
-  // TODO(P1): ganti dengan getCurrentUser()/getSession() dari lib/services/auth.ts
-  // begitu FR-02 selesai, lalu redirect('/login') jika belum autentikasi.
-  const userId = await getCurrentUserIdPlaceholder();
+  const user = await getCurrentUser();
+  if (!user) redirect("/auth/login");
 
-  if (!userId) {
-    return (
-      <div className="flex flex-1 items-center justify-center bg-zinc-50 px-6 dark:bg-black">
-        <div className="max-w-sm rounded-2xl border border-zinc-200 bg-white p-8 text-center dark:border-zinc-800 dark:bg-zinc-900">
-          <h1 className="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
-            Belum ada sesi login
-          </h1>
-          <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-            Modul autentikasi (FR-02) belum terpasang di branch ini. Untuk
-            keperluan development, set cookie <code className="rounded bg-black/[.06] px-1 py-0.5 dark:bg-white/[.08]">userId</code>{" "}
-            ke salah satu id user yang ada di database.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  const summary = await getDashboardSummary(userId);
+  const summary = await getDashboardSummary(user.id);
 
   if (!summary) {
     return (
       <div className="flex flex-1 items-center justify-center bg-zinc-50 px-6 dark:bg-black">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
-          User dengan id {userId} tidak ditemukan.
+          Data user tidak ditemukan.
         </p>
       </div>
     );
@@ -59,13 +43,16 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-1 flex-col bg-zinc-50 px-6 py-10 dark:bg-black sm:px-10">
       <div className="mx-auto w-full max-w-4xl">
-        <header className="mb-8">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
-            Selamat datang kembali,
-          </p>
-          <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
-            {nama}
-          </h1>
+        <header className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              Selamat datang kembali,
+            </p>
+            <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
+              {nama}
+            </h1>
+          </div>
+          <LogoutButton />
         </header>
 
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
