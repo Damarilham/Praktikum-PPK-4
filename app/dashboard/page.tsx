@@ -29,7 +29,7 @@ export default async function DashboardPage() {
 
   if (!summary) {
     return (
-      <div className="flex flex-1 items-center justify-center bg-zinc-50 px-6 dark:bg-black">
+      <div className="flex flex-1 items-center justify-center bg-zinc-50 px-6 dark:bg-zinc-950">
         <p className="text-sm text-zinc-600 dark:text-zinc-400">
           Data user tidak ditemukan.
         </p>
@@ -41,7 +41,7 @@ export default async function DashboardPage() {
     summary;
 
   return (
-    <div className="flex flex-1 flex-col bg-zinc-50 px-6 py-10 dark:bg-black sm:px-10">
+    <div className="flex flex-1 flex-col bg-zinc-50 px-6 py-10 dark:bg-zinc-950 sm:px-10">
       <div className="mx-auto w-full max-w-4xl">
         <header className="mb-8 flex items-start justify-between gap-4">
           <div>
@@ -61,8 +61,8 @@ export default async function DashboardPage() {
           <RingkasanCard label="Total Pengeluaran" nilai={totalPengeluaran} />
         </section>
 
-        <section className="mt-8 rounded-2xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
-          <div className="flex items-center justify-between border-b border-zinc-200 px-6 py-4 dark:border-zinc-800">
+        <section className="mt-8 rounded-2xl border-2 border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+          <div className="flex items-center justify-between border-b-2 border-zinc-300 px-6 py-4 dark:border-zinc-700">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
               Transaksi Terbaru
             </h2>
@@ -79,7 +79,7 @@ export default async function DashboardPage() {
               Belum ada transaksi. Mulai catat pemasukan atau pengeluaranmu.
             </p>
           ) : (
-            <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
+            <ul className="divide-y-2 divide-zinc-300 dark:divide-zinc-700">
               {transaksiTerbaru.map((t) => (
                 <li
                   key={t.id}
@@ -124,7 +124,7 @@ function RingkasanCard({
   tekanan?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+    <div className="rounded-2xl border-2 border-zinc-300 bg-white p-5 dark:border-zinc-700 dark:bg-zinc-900">
       <p className="text-sm text-zinc-500 dark:text-zinc-400">{label}</p>
       <p
         className={`mt-2 text-2xl font-semibold ${
