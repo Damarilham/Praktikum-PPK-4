@@ -31,69 +31,72 @@ export default async function EditTransaksiPage(props: PageProps<"/transaksi/[id
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-4 py-8">
-      <h1 className="mb-6 text-2xl font-semibold">Ubah Transaksi</h1>
-      <form action={ubahTransaksi} className="flex flex-col gap-4">
-        <input type="hidden" name="id" value={transaksi.id} />
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Jenis</span>
-          <select
-            name="jenis"
-            required
-            defaultValue={transaksi.jenis}
-            className="rounded-md border border-zinc-400 bg-transparent px-3 py-2 text-base"
+    <main className="flex min-h-screen flex-col items-center justify-center bg-zinc-100 px-4 py-8">
+      <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm">
+        <h1 className="text-2xl font-bold text-zinc-900">Ubah Transaksi</h1>
+        <p className="mt-1 text-sm text-zinc-500">Perbarui detail transaksi milikmu</p>
+        <form action={ubahTransaksi} className="mt-6 flex flex-col gap-4">
+          <input type="hidden" name="id" value={transaksi.id} />
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700">
+            <span>Jenis</span>
+            <select
+              name="jenis"
+              required
+              defaultValue={transaksi.jenis}
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-zinc-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            >
+              <option value="PEMASUKAN">Pemasukan</option>
+              <option value="PENGELUARAN">Pengeluaran</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700">
+            <span>Nominal</span>
+            <input
+              type="number"
+              name="nominal"
+              required
+              min={1}
+              step={1}
+              defaultValue={transaksi.nominal}
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700">
+            <span>Kategori</span>
+            <input
+              type="text"
+              name="kategori"
+              defaultValue={transaksi.kategori ?? ""}
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700">
+            <span>Tanggal</span>
+            <input
+              type="date"
+              name="tanggal"
+              required
+              defaultValue={formatTanggal(transaksi.tanggal)}
+              className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-zinc-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-zinc-700">
+            <span>Deskripsi</span>
+            <textarea
+              name="deskripsi"
+              rows={3}
+              defaultValue={transaksi.deskripsi ?? ""}
+              className="w-full resize-none rounded-lg border border-zinc-300 bg-white px-3 py-2.5 text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+            />
+          </label>
+          <button
+            type="submit"
+            className="mt-2 w-full rounded-lg bg-indigo-600 px-3 py-2.5 font-semibold text-white transition-colors hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-300"
           >
-            <option value="PEMASUKAN">Pemasukan</option>
-            <option value="PENGELUARAN">Pengeluaran</option>
-          </select>
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Nominal</span>
-          <input
-            type="number"
-            name="nominal"
-            required
-            min={1}
-            step={1}
-            defaultValue={transaksi.nominal}
-            className="rounded-md border border-zinc-400 bg-transparent px-3 py-2 text-base"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Kategori</span>
-          <input
-            type="text"
-            name="kategori"
-            defaultValue={transaksi.kategori ?? ""}
-            className="rounded-md border border-zinc-400 bg-transparent px-3 py-2 text-base"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Tanggal</span>
-          <input
-            type="date"
-            name="tanggal"
-            required
-            defaultValue={formatTanggal(transaksi.tanggal)}
-            className="rounded-md border border-zinc-400 bg-transparent px-3 py-2 text-base"
-          />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          <span>Deskripsi</span>
-          <textarea
-            name="deskripsi"
-            rows={3}
-            defaultValue={transaksi.deskripsi ?? ""}
-            className="rounded-md border border-zinc-400 bg-transparent px-3 py-2 text-base"
-          />
-        </label>
-        <button
-          type="submit"
-          className="rounded-md bg-zinc-900 px-3 py-2 font-medium text-zinc-50 hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-zinc-300"
-        >
-          Simpan Perubahan
-        </button>
-      </form>
+            Simpan Perubahan
+          </button>
+        </form>
+      </div>
     </main>
   );
 }
