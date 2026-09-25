@@ -1,22 +1,10 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-// FIX(sementara, di-apply di feature/dashboard): useSearchParams() wajib
-// dibungkus <Suspense> di App Router, kalau tidak `next build` gagal
-// (missing-suspense-with-csr-bailout). P1 perlu terapkan fix yang sama
-// di branch feat/auth supaya tidak hilang saat nanti di-merge ke main.
 export default function LoginPage() {
-  return (
-    <Suspense fallback={null}>
-      <LoginForm />
-    </Suspense>
-  );
-}
-
-function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") ?? "/dashboard";
