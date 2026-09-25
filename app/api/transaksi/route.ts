@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTransaksiByUser } from "@/lib/services/transaksi";
+import { getTransaksiByUser, createTransaksi, type TransaksiInput } from "@/lib/services/transaksi";
 import { getPreferensiUrutan } from "@/lib/preferensi";
+import { getCurrentUser } from "@/lib/services/auth";
 import { JenisTransaksi } from "@/app/generated/prisma/client";
+import { transaksiCreateSchema } from "@/lib/validations/transaksi";
 
 /**
  * GET /api/transaksi
@@ -9,20 +11,15 @@ import { JenisTransaksi } from "@/app/generated/prisma/client";
  * Query params:
  *   - jenis  : "pemasukan" | "pengeluaran"   (opsional, FR-07)
  *   - urutan : "terbaru"   | "terlama"        (opsional, default dari cookie FR-08)
- *
- * Catatan: autentikasi & userId akan diambil dari session P1 (getCurrentUser).
- * Sementara P1 belum tersedia, userId diambil dari header X-User-Id untuk testing.
  */
 export async function GET(request: NextRequest) {
   // ─── Auth ────────────────────────────────────────────────────────────────
-  // TODO (P1): ganti baris di bawah dengan getCurrentUser() dari lib/services/auth.ts
-  const userIdHeader = request.headers.get("x-user-id");
-  const userId = userIdHeader ? parseInt(userIdHeader, 10) : null;
+  const user = await getCurrentUser();
 
-  if (!userId || isNaN(userId)) {
+  if (!user) {
     return NextResponse.json(
       { error: "Unauthorized. Silakan login terlebih dahulu." },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -44,7 +41,63 @@ export async function GET(request: NextRequest) {
       : urutanFromCookie;
 
   // ─── Query ───────────────────────────────────────────────────────────────
-  const transaksi = await getTransaksiByUser({ userId, jenis, urutan });
+  const transaksi = await getTransaksiByUser({ userId: user.id, jenis, urutan });
 
   return NextResponse.json({ data: transaksi, urutan, jenis: jenis ?? null });
+}
+
+/**
+ * POST /api/transaksi
+ *
+ * Body:
+ *   - jenis     : "PEMASUKAN" | "PENGELUARAN"
+ *   - nominal   : integer (>= 0)
+ *   - kategori  : string (opsional)
+ *   - deskripsi : string (opsional)
+ *   - tanggal   : ISO 8601 date string
+ */
+export async function POST(request: NextRequest) {
+  // ─── Auth ────────────────────────────────────────────────────────────────
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return NextResponse.json(
+      { error: "Unauthorized. Silakan login terlebih dahulu." },
+      { status: 401 },
+    );
+  }
+
+  // ─── Validasi input ──────────────────────────────────────────────────────
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Body request tidak valid" },
+      { status: 400 },
+    );
+  }
+
+  const parsed = transaksiCreateSchema.safeParse(body);
+
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Input tidak valid", details: parsed.error.flatten() },
+      { status: 400 },
+    );
+  }
+
+  // ─── Create transaksi ────────────────────────────────────────────────────
+  let transaksi;
+  try {
+    transaksi = await createTransaksi(user.id, parsed.data as TransaksiInput);
+  } catch (err) {
+    console.error("[POST /api/transaksi] Prisma error:", err);
+    return NextResponse.json(
+      { error: "Gagal membuat transaksi. Silakan coba lagi." },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({ data: transaksi }, { status: 201 });
 }
