@@ -39,11 +39,20 @@ function FilterJenisInner({ aktif }: Props) {
           <Link
             key={label}
             href={buildHref(value)}
-            className={`rounded-full px-3 py-1 border transition-colors ${
+            className="rounded-full px-3 py-1 border transition-colors text-sm font-medium"
+            style={
               isActive
-                ? "bg-indigo-600 text-white border-indigo-600"
-                : "border-gray-300 text-gray-600 hover:border-indigo-400 hover:text-indigo-600"
-            }`}
+                ? {
+                    background: "#6366f1",
+                    color: "#ffffff",
+                    borderColor: "#6366f1",
+                  }
+                : {
+                    background: "#1e1e1e",
+                    color: "#9ca3af",
+                    borderColor: "#2e2e2e",
+                  }
+            }
           >
             {label}
           </Link>
@@ -55,7 +64,13 @@ function FilterJenisInner({ aktif }: Props) {
 
 export default function FilterJenis(props: Props) {
   return (
-    <Suspense fallback={<div className="flex gap-2 text-sm text-gray-400">Loading filter...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex gap-2 text-sm" style={{ color: "#6b7280" }}>
+          Loading filter...
+        </div>
+      }
+    >
       <FilterJenisInner {...props} />
     </Suspense>
   );

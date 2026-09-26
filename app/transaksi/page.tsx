@@ -19,11 +19,10 @@ export default async function TransaksiPage({ searchParams }: Props) {
   const user = await getCurrentUser();
 
   if (!user) {
-    // Middleware sudah handle redirect, tapi sebagai fallback:
     return null;
   }
 
-  // ─── Filter jenis dari query param (FR-07) ────────────────────────────────
+  // ─── Filter jenis (FR-07) ────────────────────────────────
   const { jenis: jenisParam } = await searchParams;
   const jenisUpper = jenisParam?.toUpperCase();
   const jenis: JenisTransaksi | undefined =
@@ -38,7 +37,7 @@ export default async function TransaksiPage({ searchParams }: Props) {
   const transaksi = await getTransaksiByUser({ userId: user.id, jenis, urutan });
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6">
+    <main className="min-h-screen bg-[#0f0f0f] p-6">
       <div className="mx-auto max-w-4xl">
         {/* Toolbar: filter jenis + toggle urutan */}
         <div className="flex items-center justify-between mb-4">
