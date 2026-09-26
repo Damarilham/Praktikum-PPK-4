@@ -97,75 +97,144 @@ export default function TransaksiList({ initialTransaksi }: Props) {
 
   return (
     <div>
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-2xl font-bold text-gray-800">Riwayat Transaksi</h1>
+        <h1 className="text-2xl font-bold" style={{ color: "#f0f0f0" }}>
+          Riwayat Transaksi
+        </h1>
         <button
           onClick={handleCreate}
-          className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+          className="rounded-lg px-4 py-2 text-sm font-semibold transition-colors"
+          style={{ background: "#6366f1", color: "#ffffff" }}
+          onMouseEnter={(e) =>
+            ((e.currentTarget as HTMLButtonElement).style.background = "#4f46e5")
+          }
+          onMouseLeave={(e) =>
+            ((e.currentTarget as HTMLButtonElement).style.background = "#6366f1")
+          }
         >
           + Tambah Transaksi
         </button>
       </div>
 
       {transaksi.length === 0 ? (
-        <p className="text-center text-gray-400 py-16">Belum ada transaksi.</p>
+        <p
+          className="text-center py-16 text-sm"
+          style={{ color: "#6b7280" }}
+        >
+          Belum ada transaksi.
+        </p>
       ) : (
-        <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
+        <div
+          className="rounded-xl overflow-hidden"
+          style={{ border: "1px solid #2e2e2e", background: "#1a1a1a" }}
+        >
           <table className="w-full text-sm">
-            <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
-              <tr>
-                <th className="px-4 py-3 text-left">Tanggal</th>
-                <th className="px-4 py-3 text-left">Kategori</th>
-                <th className="px-4 py-3 text-left">Deskripsi</th>
-                <th className="px-4 py-3 text-left">Jenis</th>
-                <th className="px-4 py-3 text-right">Nominal</th>
-                <th className="px-4 py-3 text-right">Aksi</th>
+            <thead>
+              <tr style={{ background: "#222222" }}>
+                {["Tanggal", "Kategori", "Deskripsi", "Jenis", "Nominal", "Aksi"].map(
+                  (col) => (
+                    <th
+                      key={col}
+                      className={`px-4 py-3 text-xs font-semibold uppercase tracking-wider ${
+                        col === "Nominal" || col === "Aksi" ? "text-right" : "text-left"
+                      }`}
+                      style={{ color: "#6b7280", borderBottom: "1px solid #2e2e2e" }}
+                    >
+                      {col}
+                    </th>
+                  )
+                )}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              {transaksi.map((t) => (
-                <tr key={t.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 text-gray-500">
+            <tbody>
+              {transaksi.map((t, i) => (
+                <tr
+                  key={t.id}
+                  style={{
+                    borderBottom:
+                      i < transaksi.length - 1 ? "1px solid #242424" : "none",
+                  }}
+                  onMouseEnter={(e) =>
+                    ((e.currentTarget as HTMLTableRowElement).style.background = "#212121")
+                  }
+                  onMouseLeave={(e) =>
+                    ((e.currentTarget as HTMLTableRowElement).style.background =
+                      "transparent")
+                  }
+                >
+                  {/* Tanggal */}
+                  <td className="px-4 py-3" style={{ color: "#9ca3af" }}>
                     {new Date(t.tanggal).toLocaleDateString("id-ID", {
                       day: "numeric",
                       month: "short",
                       year: "numeric",
                     })}
                   </td>
-                  <td className="px-4 py-3">{t.kategori ?? "-"}</td>
-                  <td className="px-4 py-3 text-gray-500">{t.deskripsi ?? "-"}</td>
+
+                  {/* Kategori */}
+                  <td className="px-4 py-3 font-medium" style={{ color: "#d1d5db" }}>
+                    {t.kategori ?? "-"}
+                  </td>
+
+                  {/* Deskripsi */}
+                  <td className="px-4 py-3" style={{ color: "#9ca3af" }}>
+                    {t.deskripsi ?? "-"}
+                  </td>
+
+                  {/* Jenis badge */}
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                      className="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                      style={
                         t.jenis === "PEMASUKAN"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
+                          ? { background: "#052e16", color: "#4ade80" }
+                          : { background: "#2d0a0a", color: "#f87171" }
+                      }
                     >
                       {t.jenis === "PEMASUKAN" ? "Pemasukan" : "Pengeluaran"}
                     </span>
                   </td>
+
+                  {/* Nominal */}
                   <td
-                    className={`px-4 py-3 text-right font-semibold ${
-                      t.jenis === "PEMASUKAN" ? "text-green-600" : "text-red-600"
-                    }`}
+                    className="px-4 py-3 text-right font-bold"
+                    style={{
+                      color: t.jenis === "PEMASUKAN" ? "#4ade80" : "#f87171",
+                    }}
                   >
-                    {t.jenis === "PENGELUARAN" ? "-" : "+"}
-                    Rp{t.nominal.toLocaleString("id-ID")}
+                    {t.jenis === "PENGELUARAN" ? "-" : "+"}Rp
+                    {t.nominal.toLocaleString("id-ID")}
                   </td>
+
+                  {/* Aksi */}
                   <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex items-center justify-end gap-3">
                       <button
                         onClick={() => handleEdit(t)}
                         disabled={deletingId === t.id}
-                        className="text-indigo-600 hover:text-indigo-800 text-sm font-medium disabled:opacity-50"
+                        className="text-xs font-semibold transition-colors disabled:opacity-40"
+                        style={{ color: "#818cf8" }}
+                        onMouseEnter={(e) =>
+                          ((e.currentTarget as HTMLButtonElement).style.color = "#a5b4fc")
+                        }
+                        onMouseLeave={(e) =>
+                          ((e.currentTarget as HTMLButtonElement).style.color = "#818cf8")
+                        }
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => handleDelete(t.id)}
                         disabled={deletingId === t.id}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium disabled:opacity-50"
+                        className="text-xs font-semibold transition-colors disabled:opacity-40"
+                        style={{ color: "#f87171" }}
+                        onMouseEnter={(e) =>
+                          ((e.currentTarget as HTMLButtonElement).style.color = "#fca5a5")
+                        }
+                        onMouseLeave={(e) =>
+                          ((e.currentTarget as HTMLButtonElement).style.color = "#f87171")
+                        }
                       >
                         {deletingId === t.id ? "Menghapus..." : "Hapus"}
                       </button>
@@ -189,3 +258,4 @@ export default function TransaksiList({ initialTransaksi }: Props) {
     </div>
   );
 }
+
