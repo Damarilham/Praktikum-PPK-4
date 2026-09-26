@@ -1,4 +1,4 @@
-# Expense Tracker
+# KantongMahasiswa
 
 Aplikasi web sederhana untuk membantu mahasiswa mengelola keuangan pribadi — mencatat pemasukan dan pengeluaran, melihat riwayat transaksi, serta memantau kondisi keuangan (saldo, total pemasukan, total pengeluaran) melalui dashboard.
 
@@ -57,18 +57,31 @@ Pengguna membuat akun dan login untuk mencatat transaksi keuangan pribadinya. Se
 ## 4. Skema Database (Ringkasan)
 
 ```prisma
-model User {
-  id        Int      @id @default(autoincrement())
-  nama      String
-  email     String   @unique
-  password  String
-  transaksi Transaksi[]
-  createdAt DateTime @default(now())
-}
-
 enum JenisTransaksi {
   PEMASUKAN
   PENGELUARAN
+}
+
+model User {
+  id        Int         @id @default(autoincrement())
+  nama      String
+  email     String      @unique
+  password  String
+  transaksi Transaksi[]
+  sessions  Session[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model Transaksi {
@@ -80,7 +93,10 @@ model Transaksi {
   deskripsi String?
   tanggal   DateTime
   createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
   user      User           @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 ```
 
