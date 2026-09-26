@@ -135,15 +135,15 @@ export default function TransaksiForm({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
+      <div className="w-full max-w-md rounded-2xl border border-zinc-200 bg-white p-6 shadow-2xl dark:border-zinc-800 dark:bg-zinc-900">
+        <h2 className="mb-4 text-xl font-bold text-gray-800 dark:text-zinc-100">
           {mode === "create" ? "Tambah Transaksi" : "Edit Transaksi"}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="jenis" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="jenis" className="mb-1 block text-sm font-medium text-gray-700 dark:text-zinc-300">
               Jenis <span className="text-red-500">*</span>
             </label>
             <select
@@ -151,21 +151,21 @@ export default function TransaksiForm({
               name="jenis"
               value={formData.jenis}
               onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
             >
               {JENIS_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
+                <option key={opt.value} value={opt.value} className="dark:bg-zinc-800 dark:text-zinc-100">
                   {opt.label}
                 </option>
               ))}
             </select>
             {errors.jenis && (
-              <p className="mt-1 text-sm text-red-600">{errors.jenis}</p>
+              <p className="mt-1 text-sm text-red-500">{errors.jenis}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="nominal" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="nominal" className="mb-1 block text-sm font-medium text-gray-700 dark:text-zinc-300">
               Nominal <span className="text-red-500">*</span>
             </label>
             <input
@@ -177,15 +177,15 @@ export default function TransaksiForm({
               min="0"
               step="1"
               placeholder="Contoh: 50000"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
             />
             {errors.nominal && (
-              <p className="mt-1 text-sm text-red-600">{errors.nominal}</p>
+              <p className="mt-1 text-sm text-red-500">{errors.nominal}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="tanggal" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="tanggal" className="mb-1 block text-sm font-medium text-gray-700 dark:text-zinc-300">
               Tanggal <span className="text-red-500">*</span>
             </label>
             <input
@@ -194,15 +194,15 @@ export default function TransaksiForm({
               name="tanggal"
               value={formData.tanggal}
               onChange={handleChange}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
             />
             {errors.tanggal && (
-              <p className="mt-1 text-sm text-red-600">{errors.tanggal}</p>
+              <p className="mt-1 text-sm text-red-500">{errors.tanggal}</p>
             )}
           </div>
 
           <div>
-            <label htmlFor="kategori" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="kategori" className="mb-1 block text-sm font-medium text-gray-700 dark:text-zinc-300">
               Kategori
             </label>
             <input
@@ -213,12 +213,12 @@ export default function TransaksiForm({
               onChange={handleChange}
               placeholder="Contoh: Makanan, Transport, dll"
               maxLength={100}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
             />
           </div>
 
           <div>
-            <label htmlFor="deskripsi" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="deskripsi" className="mb-1 block text-sm font-medium text-gray-700 dark:text-zinc-300">
               Deskripsi
             </label>
             <textarea
@@ -229,12 +229,12 @@ export default function TransaksiForm({
               placeholder="Catatan tambahan..."
               maxLength={500}
               rows={3}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:placeholder:text-zinc-500"
             />
           </div>
 
           {errors.form && (
-            <p className="text-sm text-red-600 text-center">{errors.form}</p>
+            <p className="text-center text-sm text-red-500">{errors.form}</p>
           )}
 
           <div className="flex justify-end gap-2 pt-4">
@@ -242,14 +242,14 @@ export default function TransaksiForm({
               type="button"
               onClick={onClose}
               disabled={loading}
-              className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 cursor-pointer transition-colors"
             >
               Batal
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+              className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 cursor-pointer transition-colors"
             >
               {loading ? "Menyimpan..." : mode === "create" ? "Tambah" : "Simpan"}
             </button>

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getDashboardSummary } from "@/lib/services/dashboard";
 import { getCurrentUser } from "@/lib/services/auth";
 import LogoutButton from "@/components/auth/LogoutButton";
+import DashboardActions from "@/components/dashboard/DashboardActions";
 import { JenisTransaksi } from "@/app/generated/prisma/client";
 
 export const metadata = {
@@ -43,7 +44,7 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-1 flex-col bg-zinc-50 px-6 py-10 dark:bg-zinc-950 sm:px-10">
       <div className="mx-auto w-full max-w-4xl">
-        <header className="mb-8 flex items-start justify-between gap-4">
+        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm text-zinc-500 dark:text-zinc-400">
               Selamat datang kembali,
@@ -52,7 +53,10 @@ export default async function DashboardPage() {
               {nama}
             </h1>
           </div>
-          <LogoutButton />
+          <div className="flex flex-wrap items-center gap-3">
+            <DashboardActions />
+            <LogoutButton />
+          </div>
         </header>
 
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -62,16 +66,10 @@ export default async function DashboardPage() {
         </section>
 
         <section className="mt-8 rounded-2xl border-2 border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-          <div className="flex items-center justify-between border-b-2 border-zinc-300 px-6 py-4 dark:border-zinc-700">
+          <div className="border-b-2 border-zinc-300 px-6 py-4 dark:border-zinc-700">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">
               Transaksi Terbaru
             </h2>
-            <Link
-              href="/transaksi"
-              className="text-sm font-medium text-zinc-600 hover:underline dark:text-zinc-400"
-            >
-              Lihat semua
-            </Link>
           </div>
 
           {transaksiTerbaru.length === 0 ? (
