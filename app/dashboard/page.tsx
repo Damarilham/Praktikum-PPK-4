@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getDashboardSummary } from "@/lib/services/dashboard";
 import { getCurrentUser } from "@/lib/services/auth";
 import LogoutButton from "@/components/auth/LogoutButton";
+import BudgetIndicator from "@/components/budget/BudgetIndicator";
 import DashboardActions from "@/components/dashboard/DashboardActions";
 import { JenisTransaksi } from "@/app/generated/prisma/client";
 
@@ -64,6 +65,11 @@ export default async function DashboardPage() {
           <RingkasanCard label="Total Pemasukan" nilai={totalPemasukan} />
           <RingkasanCard label="Total Pengeluaran" nilai={totalPengeluaran} />
         </section>
+
+        <BudgetIndicator
+          totalPemasukan={totalPemasukan}
+          totalPengeluaran={totalPengeluaran}
+        />
 
         <section className="mt-8 rounded-2xl border-2 border-zinc-300 bg-white dark:border-zinc-700 dark:bg-zinc-900">
           <div className="border-b-2 border-zinc-300 px-6 py-4 dark:border-zinc-700">
