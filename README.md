@@ -29,6 +29,11 @@ Pengguna membuat akun dan login untuk mencatat transaksi keuangan pribadinya. Se
 | 6 | SRS-06 | Sistem menyimpan minimal satu preferensi pengguna lewat cookies | User | Sedang |
 | 7 | SRS-07 | Pengguna hanya dapat mengakses dan mengelola data transaksi miliknya sendiri (authorization) | User | Tinggi |
 | 8 | SRS-08 | Pengguna dapat logout dan mengakhiri session | User | Sedang |
+| 9 | SRS-09 | Pengguna dapat menetapkan (set), mengubah, dan menghapus anggaran pengeluaran untuk satu bulan tertentu | User | Tinggi |
+| 10 | SRS-10 | Pengguna dapat melihat ringkasan anggaran (budget summary) berisi total anggaran, total pengeluaran, dan sisa anggaran pada bulan yang dipilih | User | Tinggi |
+| 11 | SRS-11 | Sistem menampilkan indikator status penggunaan anggaran (Aman / Waspada / Melebihi) berdasarkan persentase pengeluaran terhadap anggaran | User | Sedang |
+| 12 | SRS-12 | Pengguna dapat memilih bulan dan tahun untuk melihat anggaran dan pemakaiannya (monthly budget) | User | Sedang |
+| 13 | SRS-13 | Pengguna hanya dapat mengakses dan mengelola anggaran miliknya sendiri (authorization) | User | Tinggi |
 
 ## 2. Functional Requirement
 
@@ -42,6 +47,11 @@ Pengguna membuat akun dan login untuk mencatat transaksi keuangan pribadinya. Se
 | 6 | FR-06 | Authorization Transaksi | Query transaksi selalu di-scope ke `userId` yang sedang login, tolak akses ke data user lain | SRS-04, SRS-07 |
 | 7 | FR-07 | Filter Transaksi | Filter list transaksi berdasarkan jenis via query param (`?jenis=pemasukan`/`pengeluaran`) | SRS-05 |
 | 8 | FR-08 | Cookie Preferensi | Set & baca cookie untuk minimal satu preferensi pengguna | SRS-06 |
+| 9 | FR-09 | Set Budget | Form dan endpoint untuk membuat, mengubah, dan menghapus anggaran (bulan, tahun, nominal). Satu user hanya punya satu anggaran per bulan. Validasi dengan Zod (nominal > 0, bulan 1-12) | SRS-09 |
+| 10 | FR-10 | Budget Summary | Menampilkan total anggaran, total pengeluaran bulan itu (jumlah transaksi `PENGELUARAN` pada bulan tersebut), dan sisa anggaran (anggaran − pengeluaran) | SRS-10 |
+| 11 | FR-11 | Budget Indikator | Menghitung persentase pemakaian dan menampilkan status beserta progress bar berwarna. Usulan ambang: **Aman** < 70%, **Waspada** 70% sampai < 100%, **Melebihi** ≥ 100% | SRS-11 |
+| 12 | FR-12 | Monthly Budget | Pemilih bulan/tahun via query param (`?bulan=9&tahun=2026`), default ke bulan berjalan. Data summary dan indikator mengikuti bulan terpilih | SRS-12 |
+| 13 | FR-13 | Authorization Budget | Semua query budget di-scope ke `userId` yang sedang login. Akses ke budget user lain ditolak (403/404) | SRS-09, SRS-13 |
 
 ## 3. Pembagian Tugas Programmer
 
@@ -136,3 +146,5 @@ DATABASE_URL="postgresql://postgres:password@localhost:5432/expense_tracker"
 BETTER_AUTH_SECRET="isi-dengan-string-acak"
 BETTER_AUTH_URL="http://localhost:3000"
 ```
+
+
