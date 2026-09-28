@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const SESSION_COOKIE_NAME = "session_token";
 
 // Route yang butuh login
-const PROTECTED_PREFIXES = ["/dashboard", "/transaksi"];
+const PROTECTED_PREFIXES = ["/dashboard", "/transaksi", "/budget"];
 
 // Route yang hanya boleh diakses kalau BELUM login
 const AUTH_ONLY_PREFIXES = ["/auth/login", "/auth/register"];
@@ -35,5 +35,10 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/transaksi/:path*", "/auth/:path*"],
+  matcher: [
+    "/dashboard/:path*",
+    "/transaksi/:path*",
+    "/budget/:path*",
+    "/auth/:path*",
+  ],
 };
