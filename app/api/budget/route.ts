@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/services/auth";
-import { createBudget, getBudgetByMonth } from "@/lib/services/budget";
+import { createBudget, getBudgetsByMonth, getBudgetByName } from "@/lib/services/budget";
 import { budgetCreateSchema, parseBulanTahun } from "@/lib/validations/budget";
 
 /**
  * GET /api/budget?bulan=9&tahun=2026
  *
- * Ambil anggaran milik user yang sedang login pada bulan & tahun tertentu.
+ * Ambil SEMUA anggaran milik user yang sedang login pada bulan & tahun tertentu.
  * Kalau bulan/tahun tidak diisi, dipakai bulan berjalan.
- * Response: { data: Budget | null, bulan, tahun }
+ * Response: { data: Budget[], bulan, tahun }
  */
 export async function GET(request: NextRequest) {
   // ─── Auth (FR-13) ────────────────────────────────────────────────────────
@@ -28,20 +28,22 @@ export async function GET(request: NextRequest) {
     searchParams.get("tahun"),
   );
 
-  const budget = await getBudgetByMonth(user.id, bulan, tahun);
+  const budgets = await getBudgetsByMonth(user.id, bulan, tahun);
 
-  return NextResponse.json({ data: budget, bulan, tahun });
+  return NextResponse.json({ data: budgets, bulan, tahun });
 }
 
 /**
  * POST /api/budget
  *
  * Body:
+ *   - nama    : string (1-50 chars), nama anggaran, mis: "Makan", "Transport"
  *   - bulan   : integer 1-12
  *   - tahun   : integer
  *   - nominal : integer > 0
  *
- * Satu user hanya boleh punya satu anggaran per bulan (409 kalau sudah ada).
+ * User boleh punya beberapa anggaran per bulan (dibedakan by nama).
+ * Return 409 kalau nama sudah ada di bulan & tahun yang sama.
  */
 export async function POST(request: NextRequest) {
   // ─── Auth (FR-13) ────────────────────────────────────────────────────────
@@ -74,16 +76,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // ─── Cek duplikat: satu anggaran per bulan per user ──────────────────────
-  const sudahAda = await getBudgetByMonth(
+  // ─── Cek duplikat: satu nama anggaran per bulan per user ──────────────────
+  const sudahAda = await getBudgetByName(
     user.id,
     parsed.data.bulan,
     parsed.data.tahun,
+    parsed.data.nama,
   );
 
   if (sudahAda) {
     return NextResponse.json(
-      { error: "Anggaran untuk bulan dan tahun ini sudah ada. Gunakan ubah." },
+      { error: "Anggaran dengan nama ini untuk bulan dan tahun ini sudah ada." },
       { status: 409 },
     );
   }
@@ -101,7 +104,7 @@ export async function POST(request: NextRequest) {
       err.code === "P2002"
     ) {
       return NextResponse.json(
-        { error: "Anggaran untuk bulan dan tahun ini sudah ada." },
+        { error: "Anggaran dengan nama ini untuk bulan dan tahun ini sudah ada." },
         { status: 409 },
       );
     }

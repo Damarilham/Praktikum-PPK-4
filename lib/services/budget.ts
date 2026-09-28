@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { JenisTransaksi } from "@/app/generated/prisma/client";
 import type {
   BudgetCreateInput,
   BudgetUpdateInput,
@@ -15,66 +16,43 @@ import { getTotalPengeluaranByMonth } from "@/lib/services/transaksi";
  */
 
 /**
- * Ambil anggaran milik user pada bulan & tahun tertentu.
- * Mengembalikan null kalau belum ada anggaran.
+ * Ambil SEMUA anggaran milik user pada bulan & tahun tertentu.
+ * Mengembalikan array (bisa kosong).
  * Fungsi ini dipakai juga oleh P2 (summary), P3 (indikator), dan P4 (monthly).
  */
-export async function getBudgetByMonth(
+export async function getBudgetsByMonth(
   userId: number,
   bulan: number,
   tahun: number,
 ) {
-  return prisma.budget.findUnique({
+  return prisma.budget.findMany({
     where: {
-      userId_bulan_tahun: { userId, bulan, tahun },
+      userId,
+      bulan,
+      tahun,
     },
+    orderBy: { createdAt: "asc" },
   });
 }
 
-export type BudgetSummaryStatus = "aman" | "warning" | "over";
-
-export type BudgetSummary = {
-  bulan: number;
-  tahun: number;
-  totalBudget: number;
-  totalSpent: number;
-  remaining: number;
-  percentage: number;
-  status: BudgetSummaryStatus;
-};
-
-function getBudgetStatus(percentage: number): BudgetSummaryStatus {
-  if (percentage > 100) return "over";
-  if (percentage >= 80) return "warning";
-  return "aman";
-}
-
 /**
- * Ringkasan anggaran bulanan (FR-10).
- * Menggabungkan nominal budget dengan total pengeluaran bulan tsb.
+ * Ambil satu anggaran berdasarkan kombinasi userId, bulan, tahun, dan nama.
+ * Digunakan untuk cek duplikat nama di bulan yang sama.
  */
-export async function getBudgetSummary(
+export async function getBudgetByName(
   userId: number,
   bulan: number,
   tahun: number,
-): Promise<BudgetSummary | null> {
-  const budget = await getBudgetByMonth(userId, bulan, tahun);
-  if (!budget) return null;
-
-  const totalSpent = await getTotalPengeluaranByMonth(userId, bulan, tahun);
-  const totalBudget = budget.nominal;
-  const remaining = totalBudget - totalSpent;
-  const percentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
-
-  return {
-    bulan,
-    tahun,
-    totalBudget,
-    totalSpent,
-    remaining,
-    percentage,
-    status: getBudgetStatus(percentage),
-  };
+  nama: string,
+) {
+  return prisma.budget.findFirst({
+    where: {
+      userId,
+      bulan,
+      tahun,
+      nama,
+    },
+  });
 }
 
 /**
@@ -91,13 +69,15 @@ export async function getBudgetById(userId: number, budgetId: number) {
 
 /**
  * Buat anggaran baru untuk user.
- * Kalau bulan + tahun sudah punya anggaran, Prisma melempar error P2002
- * (unique constraint) yang ditangani oleh route API menjadi 409.
+ * User bisa punya beberapa anggaran per bulan (dibedakan by nama).
+ * Kalau nama sudah ada di bulan & tahun yang sama, Prisma melempar error
+ * yang ditangani oleh route API menjadi 409.
  */
 export async function createBudget(userId: number, data: BudgetCreateInput) {
   return prisma.budget.create({
     data: {
       userId,
+      nama: data.nama,
       bulan: data.bulan,
       tahun: data.tahun,
       nominal: data.nominal,
@@ -134,4 +114,51 @@ export async function deleteBudget(userId: number, budgetId: number) {
       userId,
     },
   });
+}
+
+export type BudgetSummaryStatus = "aman" | "warning" | "over";
+
+export type BudgetSummary = {
+  bulan: number;
+  tahun: number;
+  totalBudget: number;
+  totalSpent: number;
+  remaining: number;
+  percentage: number;
+  status: BudgetSummaryStatus;
+};
+
+function getBudgetStatus(percentage: number): BudgetSummaryStatus {
+  if (percentage > 100) return "over";
+  if (percentage >= 80) return "warning";
+  return "aman";
+}
+
+/**
+ * Ringkasan anggaran bulanan (FR-10).
+ * Menggabungkan nominal budget dengan total pengeluaran bulan tsb.
+ * Total budget = sum of all budget items for that month.
+ */
+export async function getBudgetSummary(
+  userId: number,
+  bulan: number,
+  tahun: number,
+): Promise<BudgetSummary | null> {
+  const budgets = await getBudgetsByMonth(userId, bulan, tahun);
+  if (budgets.length === 0) return null;
+
+  const totalSpent = await getTotalPengeluaranByMonth(userId, bulan, tahun);
+  const totalBudget = budgets.reduce((sum, b) => sum + b.nominal, 0);
+  const remaining = totalBudget - totalSpent;
+  const percentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+
+  return {
+    bulan,
+    tahun,
+    totalBudget,
+    totalSpent,
+    remaining,
+    percentage,
+    status: getBudgetStatus(percentage),
+  };
 }

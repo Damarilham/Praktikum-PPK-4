@@ -4,7 +4,12 @@ import { z } from "zod";
 const NOMINAL_MAKSIMAL = 2_147_483_647;
 
 // Skema untuk membuat anggaran baru (FR-09).
+// User bisa punya beberapa anggaran per bulan (dibedakan by nama).
 export const budgetCreateSchema = z.object({
+  nama: z
+    .string({ message: "Nama anggaran wajib diisi" })
+    .min(1, "Nama anggaran wajib diisi")
+    .max(50, "Nama anggaran maksimal 50 karakter"),
   bulan: z
     .number({ message: "Bulan wajib diisi" })
     .int("Bulan harus bilangan bulat")
@@ -25,7 +30,7 @@ export const budgetCreateSchema = z.object({
 export type BudgetCreateInput = z.infer<typeof budgetCreateSchema>;
 
 // Skema untuk mengubah anggaran: hanya nominal yang boleh diubah.
-// Bulan & tahun adalah identitas anggaran, jadi tidak diubah lewat update.
+// nama, bulan & tahun adalah identitas anggaran, jadi tidak diubah lewat update.
 export const budgetUpdateSchema = budgetCreateSchema.pick({ nominal: true });
 
 export type BudgetUpdateInput = z.infer<typeof budgetUpdateSchema>;
