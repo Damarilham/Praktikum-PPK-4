@@ -125,3 +125,27 @@ export async function getRingkasanByUser(userId: number) {
 
   return { saldo, totalPemasukan, totalPengeluaran };
 }
+
+/**
+ * Total pengeluaran user pada bulan & tahun tertentu.
+ * Dipakai FR-10 (Budget Summary).
+ */
+export async function getTotalPengeluaranByMonth(
+  userId: number,
+  bulan: number,
+  tahun: number,
+) {
+  const start = new Date(tahun, bulan - 1, 1);
+  const end = new Date(tahun, bulan, 1);
+
+  const result = await prisma.transaksi.aggregate({
+    where: {
+      userId,
+      jenis: JenisTransaksi.PENGELUARAN,
+      tanggal: { gte: start, lt: end },
+    },
+    _sum: { nominal: true },
+  });
+
+  return result._sum.nominal ?? 0;
+}
