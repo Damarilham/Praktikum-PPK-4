@@ -51,17 +51,18 @@ model Transaksi {
 }
 
 // Anggaran pengeluaran bulanan (FR-09).
-// Satu user hanya boleh punya satu anggaran untuk kombinasi bulan + tahun.
+// User boleh punya beberapa anggaran per bulan (misal: "Makan", "Transport", "Hiburan").
 model Budget {
   id        Int      @id @default(autoincrement())
   userId    Int
-  bulan     Int // 1-12
+  nama      String   @default("Anggaran") // Nama anggaran, mis: "Makan", "Transport", "Hiburan"
+  bulan     Int      // 1-12
   tahun     Int
   nominal   Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, bulan, tahun])
+  @@index([userId, bulan, tahun])
   @@index([userId])
 }

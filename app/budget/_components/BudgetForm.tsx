@@ -6,6 +6,7 @@ type Mode = "create" | "edit";
 
 type BudgetData = {
   id: number;
+  nama: string;
   bulan: number;
   tahun: number;
   nominal: number;
@@ -50,6 +51,7 @@ export default function BudgetForm({
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [formData, setFormData] = useState({
+    nama: initialData?.nama ?? "",
     bulan: String(initialData?.bulan ?? bulan),
     tahun: String(initialData?.tahun ?? tahun),
     nominal: initialData ? String(initialData.nominal) : "",
@@ -58,6 +60,12 @@ export default function BudgetForm({
   // Validasi sisi client (validasi utama tetap di server dengan Zod)
   function validate() {
     const newErrors: Record<string, string> = {};
+
+    if (formData.nama.trim() === "") {
+      newErrors.nama = "Nama anggaran wajib diisi";
+    } else if (formData.nama.length > 50) {
+      newErrors.nama = "Nama anggaran maksimal 50 karakter";
+    }
 
     const bulanNum = Number(formData.bulan);
     if (!Number.isInteger(bulanNum) || bulanNum < 1 || bulanNum > 12) {
@@ -90,10 +98,11 @@ export default function BudgetForm({
     setLoading(true);
 
     try {
-      // Mode edit hanya mengirim nominal, mode create mengirim bulan + tahun + nominal
+      // Mode edit hanya mengirim nominal, mode create mengirim nama + bulan + tahun + nominal
       const payload =
         mode === "create"
           ? {
+              nama: formData.nama.trim(),
               bulan: Number(formData.bulan),
               tahun: Number(formData.tahun),
               nominal: Number(formData.nominal),
@@ -174,6 +183,26 @@ export default function BudgetForm({
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="nama" className={labelClass}>
+              Nama Anggaran <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="nama"
+              name="nama"
+              value={formData.nama}
+              onChange={handleChange}
+              disabled={mode === "edit"}
+              maxLength={50}
+              placeholder="Contoh: Makan, Transport, Hiburan"
+              className={inputClass}
+            />
+            {errors.nama && (
+              <p className="mt-1 text-sm text-red-500">{errors.nama}</p>
+            )}
+          </div>
+
           <div>
             <label htmlFor="bulan" className={labelClass}>
               Bulan <span className="text-red-500">*</span>
