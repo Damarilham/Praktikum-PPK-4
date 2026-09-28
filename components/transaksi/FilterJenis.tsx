@@ -1,12 +1,9 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
-import type { JenisTransaksi } from "@/app/generated/prisma/client";
-
 type Props = {
-  aktif?: JenisTransaksi;
+  aktif?: string | null;
+  onFilterChange?: (value: string | null) => void;
+  disabled?: boolean;
 };
 
 const FILTER_OPTIONS: { label: string; value: string | null }[] = [
@@ -15,31 +12,37 @@ const FILTER_OPTIONS: { label: string; value: string | null }[] = [
   { label: "Pengeluaran", value: "pengeluaran" },
 ];
 
-function FilterJenisInner({ aktif }: Props) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+export default function FilterJenis({ aktif, onFilterChange, disabled }: Props) {
+  const aktifLower = aktif ? aktif.toLowerCase() : null;
 
-  function buildHref(value: string | null) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value) {
-      params.set("jenis", value);
+  function handleClick(value: string | null) {
+    if (disabled) return;
+    if (onFilterChange) {
+      onFilterChange(value);
     } else {
-      params.delete("jenis");
+      const url = new URL(window.location.href);
+      if (value) {
+        url.searchParams.set("jenis", value);
+      } else {
+        url.searchParams.delete("jenis");
+      }
+      window.history.replaceState(null, "", url.toString());
+      window.dispatchEvent(new CustomEvent("filter-jenis-change", { detail: value }));
     }
-    return `${pathname}?${params.toString()}`;
   }
 
-  const aktifLower = aktif?.toLowerCase();
-
   return (
-    <div className="flex gap-2 text-sm">
+    <div className="flex gap-2 text-sm" role="group" aria-label="Filter jenis transaksi">
       {FILTER_OPTIONS.map(({ label, value }) => {
-        const isActive = aktifLower === (value ?? undefined) || (!aktifLower && !value);
+        const isActive =
+          aktifLower === (value ?? null) || (!aktifLower && !value);
         return (
-          <Link
+          <button
             key={label}
-            href={buildHref(value)}
-            className="rounded-full px-3 py-1 border transition-colors text-sm font-medium"
+            type="button"
+            disabled={disabled}
+            onClick={() => handleClick(value)}
+            className="rounded-full px-3 py-1 border transition-colors text-sm font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             style={
               isActive
                 ? {
@@ -55,23 +58,10 @@ function FilterJenisInner({ aktif }: Props) {
             }
           >
             {label}
-          </Link>
+          </button>
         );
       })}
     </div>
   );
 }
 
-export default function FilterJenis(props: Props) {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex gap-2 text-sm" style={{ color: "#6b7280" }}>
-          Loading filter...
-        </div>
-      }
-    >
-      <FilterJenisInner {...props} />
-    </Suspense>
-  );
-}
