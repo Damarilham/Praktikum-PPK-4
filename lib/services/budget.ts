@@ -3,6 +3,7 @@ import type {
   BudgetCreateInput,
   BudgetUpdateInput,
 } from "@/lib/validations/budget";
+import { getTotalPengeluaranByMonth } from "@/lib/services/transaksi";
 
 /**
  * Service anggaran bulanan (FR-09 & FR-13).
@@ -28,6 +29,52 @@ export async function getBudgetByMonth(
       userId_bulan_tahun: { userId, bulan, tahun },
     },
   });
+}
+
+export type BudgetSummaryStatus = "aman" | "warning" | "over";
+
+export type BudgetSummary = {
+  bulan: number;
+  tahun: number;
+  totalBudget: number;
+  totalSpent: number;
+  remaining: number;
+  percentage: number;
+  status: BudgetSummaryStatus;
+};
+
+function getBudgetStatus(percentage: number): BudgetSummaryStatus {
+  if (percentage > 100) return "over";
+  if (percentage >= 80) return "warning";
+  return "aman";
+}
+
+/**
+ * Ringkasan anggaran bulanan (FR-10).
+ * Menggabungkan nominal budget dengan total pengeluaran bulan tsb.
+ */
+export async function getBudgetSummary(
+  userId: number,
+  bulan: number,
+  tahun: number,
+): Promise<BudgetSummary | null> {
+  const budget = await getBudgetByMonth(userId, bulan, tahun);
+  if (!budget) return null;
+
+  const totalSpent = await getTotalPengeluaranByMonth(userId, bulan, tahun);
+  const totalBudget = budget.nominal;
+  const remaining = totalBudget - totalSpent;
+  const percentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+
+  return {
+    bulan,
+    tahun,
+    totalBudget,
+    totalSpent,
+    remaining,
+    percentage,
+    status: getBudgetStatus(percentage),
+  };
 }
 
 /**
